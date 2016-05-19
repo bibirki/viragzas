@@ -1,0 +1,21 @@
+create table becs(FID varchar,OBJECTID int,SHAPE text,BAUM_ID int,DATENFUEHRUNG text,BEZIRK int,OBJEKT_STRASSE text,GEBIETSGRUPPE text,GATTUNG_ART text,PFLANZJAHR int,PFLANZJAHR_TXT text,STAMMUMFANG int,STAMMUMFANG_TXT text,BAUMHOEHE int,BAUMHOEHE_TXT text,KRONENDURCHMESSER int,KRONENDURCHMESSER_TXT text,BAUMNUMMER int,SE_ANNO_CAD_DATA varchar);
+
+COPY becs FROM 'C:\Users\Eszter\Downloads\BAUMKATOGD.csv' DELIMITER ',' CSV HEADER;
+
+create table fajlista as select distinct(gattung_art) from becs;
+
+alter table fajlista add column gid serial primary key;
+alter table fajlista add column viraghonap1 integer;
+
+
+create extension postgis;
+SELECT AddGeometryColumn ('public','becs','geom',4326,'POINT',2);
+update becs set geom = ST_GeomFromText(shape, 4326);
+
+copy falista from 'C:\Users\galicz\Documents\Spaces\codes\viragzas\fagyujtemeny7.csv' delimiter ',';
+alter table falista add column gid bigserial primary key;
+
+
+create table becs_viragzas as
+select * from becs, falista
+where becs.gattung_art LIKE '%' || falista.fajnev || '%'
